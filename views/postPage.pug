@@ -1,0 +1,8 @@
+extends layouts/main-layout.pug 
+
+block content 
+  .postsContainer
+    +createPost(post, userLoggedIn)
+    each reply in replies
+      +createPost(reply, userLoggedIn)
+  +createReplyModal(userLoggedIn)
