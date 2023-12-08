@@ -4,7 +4,7 @@ const router = express.Router();
 const postsControllers = require(`${__dirname}/../../controllers/postsControllers.js`);
 const authControllers = require(`${__dirname}/../../controllers/authControllers.js`);
 
-router.use(authControllers.isLoggedIn);
+router.use(authControllers.protect);
 router.route('/')
   .post(postsControllers.addPost)
   .get(postsControllers.getPosts);

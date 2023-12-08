@@ -1,8 +1,9 @@
 const Message = require(`${__dirname}/../models/messageModel.js`);
 const Chat = require(`${__dirname}/../models/chatModel.js`);
 const Notification = require(`${__dirname}/../models/notificationModel.js`);
+const catchAsync = require(`${__dirname}/../utils/catchAsync.js`);
 
-exports.addMessage = async (req, res, next) => {
+exports.addMessage = catchAsync(async (req, res, next) => {
   req.body.sender = req.user._id;
   let message = await Message.create(req.body);
   
@@ -29,4 +30,4 @@ exports.addMessage = async (req, res, next) => {
       message
     }
   });
-}
+})

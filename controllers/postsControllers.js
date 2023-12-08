@@ -1,8 +1,10 @@
 const User = require("../models/userModel");
 const Post = require(`${__dirname}/../models/postModel.js`);
 const Notification = require(`${__dirname}/../models/notificationModel.js`);
+const catchAsync = require(`${__dirname}/../utils/catchAsync.js`);
+const AppError = require(`${__dirname}/../utils/AppError.js`);
 
-const addNotification = async (userTo, userFrom, notificationType, entityId, add) => {
+const addNotification = catchAsync(async (userTo, userFrom, notificationType, entityId, add) => {
 	if (userTo.toString() != userFrom.toString()) {
 		if (add) {
 			await Notification.addNotification(userTo , userFrom, notificationType, entityId);
@@ -10,14 +12,12 @@ const addNotification = async (userTo, userFrom, notificationType, entityId, add
 			await Notification.deleteNotification(userTo, userFrom, notificationType, entityId);
 		}
 	}
-}
-exports.addPost = async (req, res, next) => {
+})
+
+exports.addPost = catchAsync(async (req, res, next) => {
 	const content = req.body.content;
 	if (!content) {
-		return res.status(400).json({
-			status: 'failed',
-			message: "the content can't be empty"
-		})
+    return next(new AppError("the content can't be empty", 400));
 	}
 	req.body.postedBy = req.user._id;
 
@@ -37,9 +37,9 @@ exports.addPost = async (req, res, next) => {
 			post
 		}
 	})
-}
+})
 
-exports.getPosts = async (req, res, next) => {
+exports.getPosts = catchAsync(async (req, res, next) => {
 	let query = Post.find();
 
 	const search = req.query.search;
@@ -72,17 +72,15 @@ exports.getPosts = async (req, res, next) => {
 			posts
 		}
 	})
-}
-exports.postLike = async (req, res, next) => {
+})
+
+exports.postLike = catchAsync(async (req, res, next) => {
 	const postId = req.params.id;
 	const userId = req.user._id;
 	let post = await Post.findById(postId);
 
 	if (!post) {
-		return res.status(404).json({
-			status: 'failed',
-			message: 'there is no post with this ID'
-		})
+    return next(new AppError('there is no post with this ID', 404));
 	}
 
 	const hasLike = post.likes.includes(userId);
@@ -116,18 +114,15 @@ exports.postLike = async (req, res, next) => {
 			like: !hasLike
 		}
 	})
-}
+})
 
-exports.postRetweet = async (req, res, next) => {
+exports.postRetweet = catchAsync(async (req, res, next) => {
 	const userId = req.user._id;
 	const postId = req.params.id;
 
 	let post = await Post.findById(postId);
 	if (!post) {
-		return res.status(404).json({
-			status: 'failed',
-			message: 'this id is not belonging to any post'
-		})
+    return next(new AppError('this id is not belonging to any post', 404));
 	}
 
 	let retweetPost = await Post.findOneAndDelete({
@@ -168,17 +163,14 @@ exports.postRetweet = async (req, res, next) => {
 			retweet: (op == '$push')
 		}
 	})
-}
+})
 
-exports.getPost = async (req, res, next) => {
+exports.getPost = catchAsync(async (req, res, next) => {
 	const postId = req.params.id;
 	const post = await Post.findById(postId);
 
 	if (!post) {
-		return res.status(404).json({
-			status: 'failed',
-			message: 'there is no posts with this ID'
-		})
+    return next(new AppError('there is no posts with this ID', 404));
 	}
 	const replies = await Post.find({
 		replyTo: postId
@@ -191,16 +183,13 @@ exports.getPost = async (req, res, next) => {
 			replies
 		}
 	})
-}
+})
 
-exports.deletePost = async (req, res, next) => {
+exports.deletePost = catchAsync(async (req, res, next) => {
 	const deletedPost = await Post.findByIdAndDelete(req.params.id);
 
 	if (!deletedPost) {
-		return res.status(404).json({
-			status: 'failed',
-			message: 'there is no Post with this ID'
-		})
+    return next(new AppError('there is no Post with this ID', 404));
 	}
 
 	res.status(203).json({
@@ -209,9 +198,9 @@ exports.deletePost = async (req, res, next) => {
 			deletedPost
 		}
 	})
-}
+})
 
-exports.pinPost = async (req, res, next) => {
+exports.pinPost = catchAsync(async (req, res, next) => {
 	await Post.updateMany({}, {
 		pinned: false
 	});
@@ -227,9 +216,9 @@ exports.pinPost = async (req, res, next) => {
 			post
 		}
 	})
-}
+})
 
-exports.unPinPost = async (req, res, next) => {
+exports.unPinPost = catchAsync(async (req, res, next) => {
 	const post = await Post.findByIdAndUpdate(req.params.id, {
 		pinned: false
 	}, {
@@ -242,4 +231,4 @@ exports.unPinPost = async (req, res, next) => {
 			post
 		}
 	})
-}
+})

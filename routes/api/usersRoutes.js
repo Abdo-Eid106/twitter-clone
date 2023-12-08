@@ -6,23 +6,21 @@ const authControllers = require(`${__dirname}/../../controllers/authControllers.
 const { upload, resizeProfilePhoto, resizeCoverPhoto } = require(`${__dirname}/../../utils/upload.js`);
 
 
+router.use(authControllers.protect);
 router.route('/')
-  .get(authControllers.isLoggedIn, userControllers.getUsers);
+  .get(userControllers.getUsers);
 
 router.put('/:id/follow', 
-  authControllers.isLoggedIn, 
   userControllers.changeFollow);
 
 
 router.post('/profilePicture',
-  authControllers.isLoggedIn,
   upload.single('profilePic'),
   resizeProfilePhoto, 
   userControllers.uploadProfilePicture);
 
 
 router.post('/coverPhoto',
-  authControllers.isLoggedIn,
   upload.single('coverPhoto'),
   resizeCoverPhoto, 
   userControllers.uploadCoverPhoto);

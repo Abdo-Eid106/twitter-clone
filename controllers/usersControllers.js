@@ -1,16 +1,15 @@
 const User = require(`${__dirname}/../models/userModel.js`);
 const Notification = require(`${__dirname}/../models/notificationModel.js`);
+const catchAsync = require(`${__dirname}/../utils/catchAsync.js`);
+const AppError = require(`${__dirname}/../utils/AppError.js`);
 
 
-exports.changeFollow = async (req, res, next) => {
+exports.changeFollow = catchAsync(async (req, res, next) => {
   const userId = req.params.id;
 
   let user = await User.findById(userId);
   if (!user) {
-    return res.status(404).json({
-      status: 'failed',
-      message: 'there is no User with this ID'
-    })
+    return next(new AppError('there is no User with this ID', 404));
   }
 
   const isFollow = user.followers.includes(req.user._id.toString());
@@ -47,11 +46,11 @@ exports.changeFollow = async (req, res, next) => {
       follow: !isFollow
     }
   })
-}
+})
 
-exports.uploadProfilePicture = async (req, res, next) => {
+exports.uploadProfilePicture = catchAsync(async (req, res, next) => {
   if (!req.file) {
-    return next(new Error('there is no file is uploaded'));
+    return next(new AppError('there is no file is uploaded', 400));
   }
   req.body.profilePic = req.file.filename;
   const user = await User.findByIdAndUpdate(req.user._id, req.body);
@@ -61,11 +60,11 @@ exports.uploadProfilePicture = async (req, res, next) => {
       user
     }
   })
-}
+})
 
-exports.uploadCoverPhoto = async (req, res, next) => {
+exports.uploadCoverPhoto = catchAsync(async (req, res, next) => {
   if (!req.file) {
-    return next(new Error('there is no file is uploaded'));
+    return next(new AppError('there is no file is uploaded', 400));
   }
   req.body.coverPhoto = req.file.filename;
   const user = await User.findByIdAndUpdate(req.user._id, req.body);
@@ -75,9 +74,9 @@ exports.uploadCoverPhoto = async (req, res, next) => {
       user
     }
   })
-}
+})
 
-exports.getUsers = async (req, res, next) => {
+exports.getUsers = catchAsync(async (req, res, next) => {
   let query = User.find();
 
   const search = req.query.search;
@@ -98,4 +97,4 @@ exports.getUsers = async (req, res, next) => {
       users
     }
   })
-}
+})

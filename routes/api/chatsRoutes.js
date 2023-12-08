@@ -4,7 +4,7 @@ const router = express.Router();
 const chatsControllers = require(`${__dirname}/../../controllers/chatsControllers.js`);
 const authControllers = require(`${__dirname}/../../controllers/authControllers.js`);
 
-router.use(authControllers.isLoggedIn);
+router.use(authControllers.protect);
 router.route('/')
   .get(chatsControllers.getChats)
   .post(chatsControllers.addChat);

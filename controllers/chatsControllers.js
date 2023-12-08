@@ -1,8 +1,10 @@
 const Chat = require(`${__dirname}/../models/chatModel.js`);
 const User = require(`${__dirname}/../models/userModel.js`);
 const Message = require(`${__dirname}/../models/messageModel.js`);
+const catchAsync = require(`${__dirname}/../utils/catchAsync.js`);
+const AppError = require(`${__dirname}/../utils/AppError.js`);
 
-exports.addChat = async (req, res, next) => {
+exports.addChat = catchAsync(async (req, res, next) => {
   if (!req.body.users) {
     req.body.users = [];
   }
@@ -11,12 +13,8 @@ exports.addChat = async (req, res, next) => {
   const uniqueUsers = new Set(req.body.users);
   const users = [...uniqueUsers];
 
-  if (users.length < 2) {
-    return res.status(400).json({
-      status: 'failed',
-      message: 'the number of the users of the chat should be greater than 1'
-    })
-  }
+  if (users.length < 2) 
+    return next(new AppError('the number of the users of the chat should be greater than 1', 400));
 
   req.body.users = users;
   req.body.isGroupChat = true;
@@ -28,9 +26,9 @@ exports.addChat = async (req, res, next) => {
       chat
     }
   })
-}
+})
 
-exports.getChats = async (req, res, next) => {
+exports.getChats = catchAsync(async (req, res, next) => {
   let chats = await Chat.find({
     users: { $elemMatch: { $eq: req.user._id }}
   })
@@ -52,9 +50,9 @@ exports.getChats = async (req, res, next) => {
       chats
     }
   });
-}
+})
 
-exports.getChat = async (req, res, next) => {
+exports.getChat = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
   const chatId = req.params.chatId;
 
@@ -77,10 +75,7 @@ exports.getChat = async (req, res, next) => {
   }
 
   if (!chat) {
-    return res.status(404).json({
-      status: 'failed',
-      message: 'Not found'
-    })
+    return next(new AppError('Not found', 404));
   }
   
   res.status(200).json({
@@ -89,9 +84,9 @@ exports.getChat = async (req, res, next) => {
       chat
     }
   });
-}
+})
 
-exports.updateChat = async (req, res, next) => {
+exports.updateChat = catchAsync(async (req, res, next) => {
   const chat = await Chat.findByIdAndUpdate(req.params.chatId, req.body, {
     new: true
   });
@@ -102,9 +97,9 @@ exports.updateChat = async (req, res, next) => {
       chat
     }
   });
-}
+})
 
-exports.getChatMessages = async (req, res, next) => {
+exports.getChatMessages = catchAsync(async (req, res, next) => {
   const chatId = req.params.chatId;
   const messages = await Message.find({ chat: chatId })
     .populate('sender')
@@ -116,9 +111,9 @@ exports.getChatMessages = async (req, res, next) => {
       messages
     }
   });
-}
+})
 
-exports.markChatAsRead = async (req, res, next) => {
+exports.markChatAsRead = catchAsync(async (req, res, next) => {
   await Message.updateMany({ chat: req.params.chatId }, { $addToSet: { readBy: req.user._id } });
   res.status(200).end();
-}
+})
