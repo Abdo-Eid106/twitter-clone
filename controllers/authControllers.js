@@ -73,9 +73,6 @@ exports.isLoggedIn = async (req, res, next) => {
   try {
     const payloud = await jwt.verify(token, JWTSecret);
     const user = await User.findById(payloud.id);
-    const session = { user };
-
-    req.session = session;
     req.user = user;
 
     return next();
