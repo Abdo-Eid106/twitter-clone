@@ -3,16 +3,22 @@ const Post = require(`${__dirname}/../models/postModel.js`);
 const User = require(`${__dirname}/../models/userModel.js`);
 const Chat = require(`${__dirname}/../models/chatModel.js`);
 
+const getPayloud = (user, pageTitle) => {
+  return {
+    userLoggedIn: user,
+    userLoggedInJs: JSON.stringify(user),
+    pageTitle
+  };
+}
+
 exports.getHome = async (req, res, next) => {
   const following = req.user.following;
   following.push(req.user._id);
   const posts = await Post.find({ postedBy: { $in: following }}).sort('-createdAt');
-  res.status(200).render('home', {
-    pageTitle: 'home',
-    posts,
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user)
-  })
+  
+  const payloud = getPayloud(req.user, 'home');
+  payloud.posts = posts;
+  res.status(200).render('home', payloud);
 }
 
 exports.getPost = async (req, res, next) => {
@@ -20,13 +26,10 @@ exports.getPost = async (req, res, next) => {
   const replies = await Post.find({ replyTo: req.params.id });
   if (!post) return res.redirect('/');
 
-  res.status(200).render('postPage', {
-    pageTitle: 'View Post',
-    post,
-    replies,
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user)
-  })
+  const payloud = getPayloud(req.user, 'postPage');
+  payloud.post = post;
+  payloud.replies = replies;
+  res.status(200).render('postPage', payloud);
 }
 
 exports.getMyProfile = async (req, res, next) => {
@@ -38,14 +41,11 @@ exports.getMyProfile = async (req, res, next) => {
     replyTo: { $exists: false },
     pinned: false });
   
-  res.render('profilePage', {
-    pageTitle: req.user.username,
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user),
-    profileUser: req.user,
-    pinnedPost,
-    posts
-  })
+  const payloud = getPayloud(req.user, req.user.username);
+  payloud.profileUser = req.user;
+  payloud.pinnedPost = pinnedPost;
+  payloud.posts = posts;
+  res.render('profilePage', payloud);
 }
 
 exports.getUserProfile = async (req, res, next) => {
@@ -57,12 +57,9 @@ exports.getUserProfile = async (req, res, next) => {
   }
 
   if (!user) {
-    return res.render('profilePage', {
-      pageTitle: 'User not Found',
-      userLoggedIn: req.user,
-      userLoggedInJs: JSON.stringify(req.user),
-      profileUser: user
-    })
+    const payloud = getPayloud(req.user, 'User not Found');
+    payloud.profileUser = user;
+    return res.render('profilePage', payloud);
   }
 
   const pinnedPost = await Post.find({ postedBy: user._id,
@@ -74,37 +71,28 @@ exports.getUserProfile = async (req, res, next) => {
     pinned: false })
     .sort('-createdAt');
 
-  res.render('profilePage', {
-    pageTitle: user.username,
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user),
-    profileUser: user,
-    pinnedPost,
-    posts
-  })
+  const payloud = getPayloud(req.user, user.username);
+  payloud.profileUser = user;
+  payloud.pinnedPost = pinnedPost;
+  payloud.posts = posts;
+  res.render('profilePage', payloud);
 }
 
 exports.getUserReplies = async (req, res, next) => {
   const user = await User.findOne({ username: req.params.username });
   if (!user) {
-    return res.render('profilePage', {
-      pageTitle: 'User not Found',
-      userLoggedIn: req.user,
-      userLoggedInJs: JSON.stringify(req.user),
-      profileUser: user
-    })
+    const payloud = getPayloud(req.user, 'User not Found');
+    payloud.profileUser = profileUser;
+    return res.render('profilePage', payloud);
   }
 
   const posts = await Post.find({ postedBy: user._id, replyTo: { $exists: true }}).sort('-createdAt');
-  res.render('profilePage', {
-    pageTitle: user.username,
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user),
-    profileUser: user,
-    posts,
-    selectedTab: 'replies',
-    pinnedPost: []
-  })
+  const payloud = getPayloud(req.user, user.username);
+  payloud.profileUser = user;
+  payloud.posts = posts;
+  payloud.selectedTab = 'replies';
+  payloud.pinnedPost = [];
+  res.render('profilePage', payloud);
 }
 
 exports.getUserFollowings = async (req, res, next) => {
@@ -113,21 +101,15 @@ exports.getUserFollowings = async (req, res, next) => {
     .populate('following');
 
   if (!user) {
-    return res.render('followersAndFollowing', {
-      pageTitle: user.username,
-      userLoggedIn: req.user,
-      userLoggedInJs: JSON.stringify(req.user)
-    })
+    const payloud = getPayloud(req.user, user.username);
+    return res.render('followersAndFollowing', payloud);
   }
-  
-  res.render('followersAndFollowing', {
-    pageTitle: user.username,
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user),
-    profileUser: user,
-    selectedTab: 'following',
-    path: '/following'
-  })
+
+  const payloud = getPayloud(req.user, user.username);
+  payloud.profileUser = user;
+  payloud.selectedTab = 'following';
+  payloud.path = '/following';
+  res.render('followersAndFollowing', payloud);
 }
 
 exports.getUserFollowers = async (req, res, next) => {
@@ -136,47 +118,32 @@ exports.getUserFollowers = async (req, res, next) => {
     .populate('followers');
 
   if (!user) {
-    return res.render('followersAndFollowing', {
-      pageTitle: user.username,
-      userLoggedIn: req.user,
-      userLoggedInJs: JSON.stringify(req.user)
-    })
+    const payloud = getPayloud(req.user, user.username);
+    return res.render('followersAndFollowing', payloud);
   }
-  
-  res.render('followersAndFollowing', {
-    pageTitle: user.username,
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user),
-    profileUser: user,
-    selectedTab: 'followers',
-    path: '/followers'
-  })
+
+  const payloud = getPayloud(req.user, user.username);
+  payloud.profileUser = user;
+  payloud.selectedTab = 'followers';
+  payloud.path = '/followers';
+  res.render('followersAndFollowing', payloud);
 }
 
 exports.getSearch = async (req, res, next) => {
-  return res.render('searchPage', {
-    pageTitle: 'search',
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user),
-    selectedTab: 'posts'
-  });
+  const payloud = getPayloud(req.user, 'search');
+  payloud.selectedTab = 'posts';
+  return res.render('searchPage', payloud);
 }
 
 exports.getSearchTab = async (req, res, next) => {
-  return res.render('searchPage', {
-    pageTitle: 'search',
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user),
-    selectedTab: req.params.selectedTab
-  });
+  const payloud = getPayloud(req.user, 'search');
+  payloud.selectedTab = req.params.selectedTab;
+  return res.render('searchPage', payloud);
 }
 
 exports.getAddChat = async (req, res, next) => {
-  return res.render('newMessage', {
-    pageTitle: 'New Message',
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user)
-  });
+  const payloud = getPayloud(req.user, 'New Message');
+  return res.render('newMessage', payloud);
 }
 
 exports.getChats = async (req, res, next) => {
@@ -194,13 +161,10 @@ exports.getChats = async (req, res, next) => {
       chat.latestMessage.sender._id.toString() != req.user._id.toString());
     });
   }
-  
-  return res.render('inboxPage', {
-    pageTitle: 'Inbox',
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user),
-    chats
-  });
+
+  const payloud = getPayloud(req.user, 'Inbox');
+  payloud.chats = chats;
+  return res.render('inboxPage', payloud);
 }
 
 exports.getChat = async (req, res, next) => {
@@ -225,12 +189,7 @@ exports.getChat = async (req, res, next) => {
     }
   }
 
-  const payload = {
-    pageTitle: "Chat",
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user)
-  };
-
+  const payload = getPayloud(req.user, 'Chat');
   if (chat == null) {
     payload.errorMessage = "Chat does not exist or you do not have permission to view it.";
   } else {
@@ -241,9 +200,6 @@ exports.getChat = async (req, res, next) => {
 }
 
 exports.getNotifications = async(req, res, next) => {
-  res.render('notificationsPage', {
-    pageTitle: "Notifications",
-    userLoggedIn: req.user,
-    userLoggedInJs: JSON.stringify(req.user)
-  });
+  const payload = getPayloud(req.user, 'Notifications');
+  res.render('notificationsPage', payload);
 }
