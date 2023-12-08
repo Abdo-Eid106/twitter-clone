@@ -19,13 +19,13 @@ exports.addPost = async (req, res, next) => {
 			message: "the content can't be empty"
 		})
 	}
-	req.body.postedBy = req.session.user._id;
+	req.body.postedBy = req.user._id;
 
 	let post = await Post.create(req.body);
 	post = await Post.findById(post._id);
 
 	if (post.replyTo) {
-		const userFrom = req.session.user._id;
+		const userFrom = req.user._id;
 		const userTo = post.replyTo.postedBy._id;
 		const entityId = post._id;
 		addNotification(userTo, userFrom, 'reply', entityId, true);
@@ -54,8 +54,8 @@ exports.getPosts = async (req, res, next) => {
 
 	const followingOnly = req.query.followingOnly;
 	if (followingOnly) {
-		const following = req.session.user.following;
-		following.push(req.session.user._id);
+		const following = req.user.following;
+		following.push(req.user._id);
 		query = query.find({
 			postedBy: {
 				$in: following
@@ -75,7 +75,7 @@ exports.getPosts = async (req, res, next) => {
 }
 exports.postLike = async (req, res, next) => {
 	const postId = req.params.id;
-	const userId = req.session.user._id;
+	const userId = req.user._id;
 	let post = await Post.findById(postId);
 
 	if (!post) {
@@ -104,7 +104,7 @@ exports.postLike = async (req, res, next) => {
 		new: true
 	});
 
-	const userFrom = req.session.user._id;
+	const userFrom = req.user._id;
 	const userTo = post.postedBy._id;
 	const entityId = post._id;
 	await addNotification(userTo, userFrom, 'postLike', entityId, !hasLike);
@@ -119,7 +119,7 @@ exports.postLike = async (req, res, next) => {
 }
 
 exports.postRetweet = async (req, res, next) => {
-	const userId = req.session.user._id;
+	const userId = req.user._id;
 	const postId = req.params.id;
 
 	let post = await Post.findById(postId);
@@ -156,7 +156,7 @@ exports.postRetweet = async (req, res, next) => {
 		new: true
 	});
 
-	const userFrom = req.session.user._id;
+	const userFrom = req.user._id;
 	const userTo = post.postedBy._id;
 	const entityId = post._id;
 	await addNotification(userTo, userFrom, 'retweet', entityId, (op == '$push'));

@@ -1,12 +1,11 @@
 const path = require('path');
 const express = require('express');
 const app = express();
-const session = require('express-session');
-const MongoDBStore = require('connect-mongodb-session')(session);
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 dotenv.config({
   path: `${__dirname}/config.env`
 });
@@ -19,15 +18,12 @@ const usersRoutes = require(`${__dirname}/routes/api/usersRoutes.js`);
 const chatsRoutes = require(`${__dirname}/routes/api/chatsRoutes.js`);
 const messagesRoutes = require(`${__dirname}/routes/api/messagesRoutes.js`);
 const notificationsRoutes = require(`${__dirname}/routes/api/notificationsRoutes.js`);
+const authAPIRoutes = require(`${__dirname}/routes/api/authRoutes.js`);
 //userModel to update the current logged in User
 const User = require(`${__dirname}/models/userModel.js`);
 
 
 const DB = process.env.DATABASE;
-const store = new MongoDBStore({
-  uri: DB,
-  collections: 'session'
-});
 //setting the view engine and the view folder
 app.set('view engine', 'pug');
 app.set('views', 'views');
@@ -40,30 +36,15 @@ app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 //body parsers
 app.use(express.json());
-app.use(express.urlencoded({
-  extended: false
-}));
-//set up session options
-app.use(session({
-  secret: process.env.cookie_secret,
-  resave: false,
-  saveUninitialized: false,
-  store
-}));
-//updating the current loggedIn user
-app.use(async (req, res, next) => {
-  if (req.session.user) {
-    const id = req.session.user._id;
-    req.session.user = await User.findById(id);
-  }
-  next();
-});
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 app.use('/api/posts', postsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/chats', chatsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api', authAPIRoutes);
 app.use(authRoutes);
 app.use(viewsRoutes);
 
@@ -77,7 +58,9 @@ mongoose.connect(DB)
   });
 
 const server = app.listen(PORT, () => console.log('the server is listening on port ' + PORT));
-const io = require('socket.io')(server, { pingTimeout: 60000 });
+const io = require('socket.io')(server, {
+  pingTimeout: 60000
+});
 
 io.on('connection', socket => {
   socket.on("setup", user => {

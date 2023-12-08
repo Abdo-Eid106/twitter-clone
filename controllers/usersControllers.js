@@ -1,6 +1,7 @@
 const User = require(`${__dirname}/../models/userModel.js`);
 const Notification = require(`${__dirname}/../models/notificationModel.js`);
 
+
 exports.changeFollow = async (req, res, next) => {
   const userId = req.params.id;
 
@@ -12,18 +13,18 @@ exports.changeFollow = async (req, res, next) => {
     })
   }
 
-  const isFollow = user.followers.includes(req.session.user._id.toString());
+  const isFollow = user.followers.includes(req.user._id.toString());
   const op = (isFollow) ? '$pull' : '$push';
 
   user = await User.findByIdAndUpdate(userId, {
     [op]: {
-      followers: req.session.user._id
+      followers: req.user._id
     }
   }, {
     new: true
   });
 
-  await User.findByIdAndUpdate(req.session.user._id, {
+  await User.findByIdAndUpdate(req.user._id, {
     [op]: {
       following: userId
     }
@@ -31,7 +32,7 @@ exports.changeFollow = async (req, res, next) => {
     new: true
   });
 
-  const userFrom = req.session.user._id;
+  const userFrom = req.user._id;
   const userTo = req.params.id;
 
   if (!isFollow) 
@@ -53,7 +54,7 @@ exports.uploadProfilePicture = async (req, res, next) => {
     return next(new Error('there is no file is uploaded'));
   }
   req.body.profilePic = req.file.filename;
-  const user = await User.findByIdAndUpdate(req.session.user._id, req.body);
+  const user = await User.findByIdAndUpdate(req.user._id, req.body);
   return res.status(200).json({
     status: 'success',
     data: {
@@ -67,7 +68,7 @@ exports.uploadCoverPhoto = async (req, res, next) => {
     return next(new Error('there is no file is uploaded'));
   }
   req.body.coverPhoto = req.file.filename;
-  const user = await User.findByIdAndUpdate(req.session.user._id, req.body);
+  const user = await User.findByIdAndUpdate(req.user._id, req.body);
   return res.status(200).json({
     status: 'success',
     data: {

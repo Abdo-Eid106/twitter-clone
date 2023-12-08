@@ -4,15 +4,14 @@ const User = require(`${__dirname}/../models/userModel.js`);
 const Chat = require(`${__dirname}/../models/chatModel.js`);
 
 exports.getHome = async (req, res, next) => {
-  const following = req.session.user.following;
-  following.push(req.session.user._id);
+  const following = req.user.following;
+  following.push(req.user._id);
   const posts = await Post.find({ postedBy: { $in: following }}).sort('-createdAt');
-
   res.status(200).render('home', {
     pageTitle: 'home',
     posts,
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user)
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user)
   })
 }
 
@@ -25,25 +24,25 @@ exports.getPost = async (req, res, next) => {
     pageTitle: 'View Post',
     post,
     replies,
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user)
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user)
   })
 }
 
 exports.getMyProfile = async (req, res, next) => {
-  const pinnedPost = await Post.find({ postedBy: req.session.user._id,
+  const pinnedPost = await Post.find({ postedBy: req.user._id,
     replyTo: { $exists: false },
     pinned: true });
   
-  const posts = await Post.find({ postedBy: req.session.user._id,
+  const posts = await Post.find({ postedBy: req.user._id,
     replyTo: { $exists: false },
     pinned: false });
   
   res.render('profilePage', {
-    pageTitle: req.session.user.username,
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user),
-    profileUser: req.session.user,
+    pageTitle: req.user.username,
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user),
+    profileUser: req.user,
     pinnedPost,
     posts
   })
@@ -60,8 +59,8 @@ exports.getUserProfile = async (req, res, next) => {
   if (!user) {
     return res.render('profilePage', {
       pageTitle: 'User not Found',
-      userLoggedIn: req.session.user,
-      userLoggedInJs: JSON.stringify(req.session.user),
+      userLoggedIn: req.user,
+      userLoggedInJs: JSON.stringify(req.user),
       profileUser: user
     })
   }
@@ -77,8 +76,8 @@ exports.getUserProfile = async (req, res, next) => {
 
   res.render('profilePage', {
     pageTitle: user.username,
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user),
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user),
     profileUser: user,
     pinnedPost,
     posts
@@ -90,8 +89,8 @@ exports.getUserReplies = async (req, res, next) => {
   if (!user) {
     return res.render('profilePage', {
       pageTitle: 'User not Found',
-      userLoggedIn: req.session.user,
-      userLoggedInJs: JSON.stringify(req.session.user),
+      userLoggedIn: req.user,
+      userLoggedInJs: JSON.stringify(req.user),
       profileUser: user
     })
   }
@@ -99,8 +98,8 @@ exports.getUserReplies = async (req, res, next) => {
   const posts = await Post.find({ postedBy: user._id, replyTo: { $exists: true }}).sort('-createdAt');
   res.render('profilePage', {
     pageTitle: user.username,
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user),
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user),
     profileUser: user,
     posts,
     selectedTab: 'replies',
@@ -116,15 +115,15 @@ exports.getUserFollowings = async (req, res, next) => {
   if (!user) {
     return res.render('followersAndFollowing', {
       pageTitle: user.username,
-      userLoggedIn: req.session.user,
-      userLoggedInJs: JSON.stringify(req.session.user)
+      userLoggedIn: req.user,
+      userLoggedInJs: JSON.stringify(req.user)
     })
   }
   
   res.render('followersAndFollowing', {
     pageTitle: user.username,
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user),
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user),
     profileUser: user,
     selectedTab: 'following',
     path: '/following'
@@ -139,15 +138,15 @@ exports.getUserFollowers = async (req, res, next) => {
   if (!user) {
     return res.render('followersAndFollowing', {
       pageTitle: user.username,
-      userLoggedIn: req.session.user,
-      userLoggedInJs: JSON.stringify(req.session.user)
+      userLoggedIn: req.user,
+      userLoggedInJs: JSON.stringify(req.user)
     })
   }
   
   res.render('followersAndFollowing', {
     pageTitle: user.username,
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user),
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user),
     profileUser: user,
     selectedTab: 'followers',
     path: '/followers'
@@ -157,8 +156,8 @@ exports.getUserFollowers = async (req, res, next) => {
 exports.getSearch = async (req, res, next) => {
   return res.render('searchPage', {
     pageTitle: 'search',
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user),
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user),
     selectedTab: 'posts'
   });
 }
@@ -166,8 +165,8 @@ exports.getSearch = async (req, res, next) => {
 exports.getSearchTab = async (req, res, next) => {
   return res.render('searchPage', {
     pageTitle: 'search',
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user),
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user),
     selectedTab: req.params.selectedTab
   });
 }
@@ -175,14 +174,14 @@ exports.getSearchTab = async (req, res, next) => {
 exports.getAddChat = async (req, res, next) => {
   return res.render('newMessage', {
     pageTitle: 'New Message',
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user)
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user)
   });
 }
 
 exports.getChats = async (req, res, next) => {
   let chats = await Chat.find({
-    users: { $elemMatch: { $eq: req.session.user._id }}
+    users: { $elemMatch: { $eq: req.user._id }}
   })
     .populate('latestMessage')
     .sort('-updatedAt');
@@ -191,21 +190,21 @@ exports.getChats = async (req, res, next) => {
   if (req.query.unreadOnly == 'true') {
     chats = chats.filter(chat => {
       if (!chat.latestMessage) return false;
-      return (!chat.latestMessage.readBy.includes(req.session.user._id) && 
-      chat.latestMessage.sender._id.toString() != req.session.user._id.toString());
+      return (!chat.latestMessage.readBy.includes(req.user._id) && 
+      chat.latestMessage.sender._id.toString() != req.user._id.toString());
     });
   }
   
   return res.render('inboxPage', {
     pageTitle: 'Inbox',
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user),
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user),
     chats
   });
 }
 
 exports.getChat = async (req, res, next) => {
-  const userId = req.session.user._id;
+  const userId = req.user._id;
   const chatId = req.params.chatId;
 
   let chat = await Chat.findById(chatId);
@@ -228,8 +227,8 @@ exports.getChat = async (req, res, next) => {
 
   const payload = {
     pageTitle: "Chat",
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user)
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user)
   };
 
   if (chat == null) {
@@ -244,7 +243,7 @@ exports.getChat = async (req, res, next) => {
 exports.getNotifications = async(req, res, next) => {
   res.render('notificationsPage', {
     pageTitle: "Notifications",
-    userLoggedIn: req.session.user,
-    userLoggedInJs: JSON.stringify(req.session.user)
+    userLoggedIn: req.user,
+    userLoggedInJs: JSON.stringify(req.user)
   });
 }

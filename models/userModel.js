@@ -28,6 +28,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  passwordConfirm: {
+    type: String,
+    required: true,
+    validate: {
+      validator: function(val) {
+        return val == this.password;
+      },
+      message: 'the password should be equal to the password Confirm'
+    }
+  },
   profilePic: {
     type: String,
     default: '/images/profilePic.jpeg'
@@ -58,6 +68,7 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) next();
   this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
   next();
 })
 

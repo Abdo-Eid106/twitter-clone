@@ -7,7 +7,7 @@ exports.addChat = async (req, res, next) => {
     req.body.users = [];
   }
 
-  req.body.users.push(req.session.user._id);
+  req.body.users.push(req.user._id);
   const uniqueUsers = new Set(req.body.users);
   const users = [...uniqueUsers];
 
@@ -32,7 +32,7 @@ exports.addChat = async (req, res, next) => {
 
 exports.getChats = async (req, res, next) => {
   let chats = await Chat.find({
-    users: { $elemMatch: { $eq: req.session.user._id }}
+    users: { $elemMatch: { $eq: req.user._id }}
   })
     .populate('latestMessage')
     .sort('-updatedAt');
@@ -41,8 +41,8 @@ exports.getChats = async (req, res, next) => {
   if (req.query.unreadOnly == 'true') {
     chats = chats.filter(chat => {
       if (!chat.latestMessage) return false;
-      return (!chat.latestMessage.readBy.includes(req.session.user._id) && 
-      chat.latestMessage.sender._id.toString() != req.session.user._id.toString());
+      return (!chat.latestMessage.readBy.includes(req.user._id) && 
+      chat.latestMessage.sender._id.toString() != req.user._id.toString());
     });
   }
 
@@ -55,7 +55,7 @@ exports.getChats = async (req, res, next) => {
 }
 
 exports.getChat = async (req, res, next) => {
-  const userId = req.session.user._id;
+  const userId = req.user._id;
   const chatId = req.params.chatId;
 
   let chat = await Chat.findById(chatId);
@@ -119,6 +119,6 @@ exports.getChatMessages = async (req, res, next) => {
 }
 
 exports.markChatAsRead = async (req, res, next) => {
-  await Message.updateMany({ chat: req.params.chatId }, { $addToSet: { readBy: req.session.user._id } });
+  await Message.updateMany({ chat: req.params.chatId }, { $addToSet: { readBy: req.user._id } });
   res.status(200).end();
 }

@@ -4,24 +4,14 @@ block content
     h1 Register 
     form#registerForm(method="post") 
       p.errorMessage= errorMessage
-      input(type="text", name="firstName", placeholder="First name", value=firstName, required="")
-      input(type="text", name="lastName", placeholder="Last name", value=lastName, required="")
-      input(type="text", name="username", placeholder="Username", value=username, required="")
-      input(type="email", name="email", placeholder="Email", value=email, required="")
+      input#firstName(type="text", name="firstName", placeholder="First name", value=firstName, required="")
+      input#lastName(type="text", name="lastName", placeholder="Last name", value=lastName, required="")
+      input#username(type="text", name="username", placeholder="Username", value=username, required="")
+      input#email(type="email", name="email", placeholder="Email", value=email, required="")
       input#password(type="password", name="password", placeholder="Password", value=password  required="")
-      input#passwordConf(type="password", name="passwordConf", placeholder="Confirm password", value=passwordConf required="")
+      input#passwordConfirm(type="password", name="passwordConfirm", placeholder="Confirm password", value=passwordConf required="")
       input(type="submit", value="register")
     a(href="/login") Already have an account? Login here.
-  script. 
-    const form = document.getElementById('registerForm');
-    const password = document.getElementById('password');
-    const passwordConf = document.getElementById('passwordConf');
 
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      if (password.value != passwordConf.value) {
-        alert('the password should be equal to the passwordConfirm')
-      } else {
-        form.submit();
-      }
-    })
+block scripts
+  script(src="/js/register.js") 

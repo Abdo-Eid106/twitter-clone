@@ -1,38 +1,40 @@
 const User = require(`${__dirname}/../models/userModel.js`);
+const jwt = require('jsonwebtoken');
+const catchAsync = require(`${__dirname}/../utils/catchAsync.js`);
+
+const JWTSecret = process.env.JWTSecret;
+const JWTexpiresIn = process.env.JWTexpiresIn;
+
+const signToken = (payloud) => {
+  const token = jwt.sign(payloud, JWTSecret, {
+    expiresIn: JWTexpiresIn
+  });
+
+  return token;
+}
+
+const createSendToken = (res, payloud) => {
+  const token = signToken(payloud);
+  res.cookie('jwt', token);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      token
+    }
+  });
+}
 
 exports.getRegister = (req, res, next) => {
   res.render('register', {
     pageTitle: 'register'
-  })
+  });
 };
 
-exports.postRegister = async (req, res, next) => {
-  const firstName = req.body.firstName.trim();
-  const lastName = req.body.lastName.trim();
-  const username = req.body.username.trim();
-  const email = req.body.email.trim();
-
-  if (!firstName || !lastName || !username || !email) {
-    const errorMessage = 'Make sure each field has a valid value';
-    req.body.errorMessage = errorMessage;
-    return res.render('register', req.body);
-  }
-  let user = await User.findOne({
-    $or: [{
-      username
-    }, {
-      email
-    }]
-  });
-
-  if (user) {
-    const errorMessage = 'the username and the email should be unique';
-    req.body.errorMessage = errorMessage;
-    return res.render('register', req.body);
-  }
-  user = await User.create(req.body);
-  res.redirect('/login');
-}
+exports.postRegister = catchAsync(async (req, res, next) => {
+  const user = await User.create(req.body);
+  createSendToken(res, { id: user._id });
+})
 
 exports.getLogin = (req, res, next) => {
   res.render('login', {
@@ -41,41 +43,48 @@ exports.getLogin = (req, res, next) => {
 }
 
 exports.postLogin = async (req, res, next) => {
-  const logUsername = req.body.logUsername;
-  const password = req.body.logPassword;
+  const username = req.body.username;
+  const password = req.body.password;
 
-  if (!logUsername || !password) {
-    res.render('login', {
-      pageTitle: 'login',
-      errorMessage: 'please provide the user and the password'
+  if (!username || !password) {
+    return res.status(400).json({
+      status: 'failed',
+      message: 'please provide the user and the password'
     })
   }
 
   const user = await User.findOne({
-    $or: [{
-      username: logUsername
-    }, {
-      email: logUsername
-    }]
+    $or: [{ username }, { email: username }]
   });
 
   if (!user || !(await user.correctPassword(password))) {
-    return res.render('login', {
+    return res.status(400).json({
       pageTitle: 'login',
-      errorMessage: 'the user or the password is incorrect'
-    })
+      message: 'the user or the password is incorrect'
+    });
   }
-
-  req.session.user = user;
-  res.redirect('/');
+  createSendToken(res, { id: user._id });
 }
 
-exports.isLoggedIn = (req, res, next) => {
-  if (req.session && req.session.user) return next();
-  res.redirect('/login');
+exports.isLoggedIn = async (req, res, next) => {
+  const token = req.cookies.jwt;
+  if (!token) return res.redirect('/login');
+
+  try {
+    const payloud = await jwt.verify(token, JWTSecret);
+    const user = await User.findById(payloud.id);
+    const session = { user };
+
+    req.session = session;
+    req.user = user;
+
+    return next();
+  } catch (err) {
+    return res.redirect('/login');
+  }
 }
 
 exports.logOut = (req, res, next) => {
-  req.session.destroy();
+  res.cookie('jwt','', { maxAge:1 });
   res.redirect('/login');
 }

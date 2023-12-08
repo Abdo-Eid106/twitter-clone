@@ -3,10 +3,11 @@ extends layouts/login-layout.pug
 block content
   .loginContainer
     h1 Login
-    form(method="post") 
+    form(method="post" id="loginForm") 
       p.errorMessage= errorMessage
-      input(type="text", name="logUsername", placeholder="username or email", required="")
-      input(type="text", name="logPassword", placeholder="password", required="")
+      input#username(type="text", name="username", placeholder="username or email", required="")
+      input#password(type="text", name="password", placeholder="password", required="")
       input(type="submit", value="login")
     a(href="/register") Need and account? Register here.
-      
+block scripts
+  script(src="/js/login.js") 
