@@ -2,6 +2,7 @@ const User = require(`${__dirname}/../models/userModel.js`);
 const jwt = require('jsonwebtoken');
 const catchAsync = require(`${__dirname}/../utils/catchAsync.js`);
 const AppError = require(`${__dirname}/../utils/AppError.js`);
+const Email = require(`${__dirname}/../utils/Email.js`);
 
 const JWTSecret = process.env.JWTSecret;
 const JWTexpiresIn = process.env.JWTexpiresIn;
@@ -34,6 +35,8 @@ exports.getRegister = (req, res, next) => {
 
 exports.postRegister = catchAsync(async (req, res, next) => {
   const user = await User.create(req.body);
+  await new Email(user).welcome();
+
   createSendToken(res, {
     id: user._id
   });
