@@ -1,12 +1,13 @@
 const path = require('path');
 const multer = require('multer');
 const sharp = require('sharp');
+const AppError = require(`${__dirname}/AppError.js`);
 
 exports.resizeProfilePhoto = (req, res, next) => {
   if (!req.file) 
-    return next(new Error('No file is uploaded'));
+    return next(new AppError('No file is uploaded', 400));
 
-  req.file.filename = path.join('/images', `${req.session.user._id}_${Date.now()}.jpeg`);
+  req.file.filename = path.join('/upload', `${req.user._id}_${Date.now()}.jpeg`);
   sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
@@ -17,9 +18,9 @@ exports.resizeProfilePhoto = (req, res, next) => {
 
 exports.resizeCoverPhoto = (req, res, next) => {
   if (!req.file) 
-    return next(new Error('No file is uploaded'));
+    return next(new AppError('No file is uploaded', 400));
 
-  req.file.filename = path.join('/images', `${req.session.user._id}_${Date.now()}.jpeg`);
+  req.file.filename = path.join('/upload', `${req.user._id}_${Date.now()}.jpeg`);
   sharp(req.file.buffer)
     .resize(2000, 500)
     .toFormat('jpeg')
