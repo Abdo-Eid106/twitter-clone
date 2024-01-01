@@ -207,7 +207,7 @@ mixin createChat(chat, userLoggedIn)
   - const lastName = (latestMessage) ? latestMessage.sender.lastName: ' ';
   - latestMessage = (latestMessage) ? `${firstName} ${lastName}: ${latestMessage.content}`: 'New Chat';
 
-  a.resultListItem(href=`/messages/${chat._id}`)
+  a.resultListItem(href=`/messages/${chat._id}` class = `${chat.active ? 'active' : ''}`)
     .resultsImageContainer(class=`${users.length > 1 ? 'groupChatImage': ''}`)
       each image in images 
         img(src=`${image}`, alt="User's profile pic")

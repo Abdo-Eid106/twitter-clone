@@ -44,6 +44,17 @@ exports.getChats = catchAsync(async (req, res, next) => {
     });
   }
 
+  for (let chat of chats) {
+    const latestMessage = chat.latestMessage;
+    const readBy = latestMessage.readBy;
+    for (let user of readBy) {
+      if (user.toString() == req.user._id.toString()) {
+        chat.active = false;
+        break;
+      }
+    }
+  }
+
   res.status(200).json({
     status: 'success',
     data: {

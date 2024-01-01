@@ -19,8 +19,6 @@ const chatsRoutes = require(`${__dirname}/routes/api/chatsRoutes.js`);
 const messagesRoutes = require(`${__dirname}/routes/api/messagesRoutes.js`);
 const notificationsRoutes = require(`${__dirname}/routes/api/notificationsRoutes.js`);
 const authAPIRoutes = require(`${__dirname}/routes/api/authRoutes.js`);
-//userModel to update the current logged in User
-const User = require(`${__dirname}/models/userModel.js`);
 
 
 const DB = process.env.DATABASE;
