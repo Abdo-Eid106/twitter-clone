@@ -13,7 +13,7 @@ $('#userSearchTextbox').keydown(async event => {
     container.html("");
 
     if (selectedUsers.length == 0) {
-        createChatButton.prop("disabled", true);
+      createChatButton.prop("disabled", true);
     }
     return;
   }
@@ -25,11 +25,17 @@ $('#userSearchTextbox').keydown(async event => {
       return;
     }
     try {
-      const url = 'http://localhost:3000/api/users';
+      const url = '/api/users';
       const method = 'GET';
-      const params = { search: val };
+      const params = {
+        search: val
+      };
 
-      const response = await axios({ url, method, params });
+      const response = await axios({
+        url,
+        method,
+        params
+      });
 
       const users = response.data.data.users;
       outputSelectableUsers(users, container);
@@ -42,11 +48,17 @@ $('#userSearchTextbox').keydown(async event => {
 
 createChatButton.click(async event => {
   try {
-    const url = 'http://localhost:3000/api/chats';
+    const url = '/api/chats';
     const method = 'POST';
-    const data = { users: selectedUsers };
-    
-    const response = await axios({ url, method, data });
+    const data = {
+      users: selectedUsers
+    };
+
+    const response = await axios({
+      url,
+      method,
+      data
+    });
     window.location.href = '/messages';
 
   } catch (err) {

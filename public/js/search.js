@@ -3,7 +3,7 @@ $("#searchBox").keyup(async event => {
   const target = $(event.target);
   const val = target.val();
   const users = target.data().search == 'users';
-  
+
   const container = $(".resultsContainer");
   if (val == "") {
     return container.html("");
@@ -11,11 +11,17 @@ $("#searchBox").keyup(async event => {
 
   timer = setTimeout(async () => {
     try {
-      const url = `http://localhost:3000/api/${users ? 'users' : 'posts'}`;
+      const url = `/api/${users ? 'users' : 'posts'}`;
       const method = 'GET';
-      const params = { search: val };
+      const params = {
+        search: val
+      };
 
-      const response = await axios({ url, method, params });
+      const response = await axios({
+        url,
+        method,
+        params
+      });
 
       if (users) outputUsers(response.data.data.users, container);
       else outputPosts(response.data.data.posts, container);

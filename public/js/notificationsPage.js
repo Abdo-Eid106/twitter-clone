@@ -1,9 +1,12 @@
 $(document).ready(async () => {
   try {
-    const url = 'http://localhost:3000/api/notifications';
+    const url = '/api/notifications';
     const method = 'GET';
-  
-    const response = await axios({ url, method });
+
+    const response = await axios({
+      url,
+      method
+    });
     outputNotificationList(response.data.data.notifications, $(".resultsContainer"));
   } catch (err) {
     if (err.response) alert(err.response.data.message);
@@ -17,7 +20,7 @@ $(document).on('click', '.notification.active', async event => {
   const href = $(event.target).attr('href');
   const callback = () => window.location.href = href;
   markAsOpened(id, callback);
-}) 
+})
 
 const outputNotificationList = (notifications, container) => {
   notifications.forEach(notification => {
@@ -26,6 +29,6 @@ const outputNotificationList = (notifications, container) => {
   })
 
   if (notifications.length == 0) {
-      container.append("<span class='noResults'>Nothing to show.</span>");
+    container.append("<span class='noResults'>Nothing to show.</span>");
   }
 }

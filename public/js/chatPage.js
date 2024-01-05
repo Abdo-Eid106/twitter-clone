@@ -3,12 +3,15 @@ $(document).ready(async () => {
   socket.emit('join room', chatId);
   socket.on('typing', () => $(".typingDots").show());
   socket.on('stop typing', () => $(".typingDots").hide());
-  
+
   try {
-    let url = `http://localhost:3000/api/chats/${chatId}/messages`;
+    let url = `/api/chats/${chatId}/messages`;
     let method = 'GET';
 
-    const response = await axios({ url, method });
+    const response = await axios({
+      url,
+      method
+    });
     const data = response.data.data.messages;
 
     const messages = [];
@@ -26,9 +29,12 @@ $(document).ready(async () => {
     $(".loadingSpinnerContainer").remove();
     $(".chatContainer").css("visibility", "visible");
 
-    url = `http://localhost:3000/api/chats/${chatId}/messages/markAsRead`;
+    url = `/api/chats/${chatId}/messages/markAsRead`;
     method = 'PATCH';
-    await axios({ url, method });
+    await axios({
+      url,
+      method
+    });
     refreshMessageBadge();
 
   } catch (err) {
@@ -41,10 +47,16 @@ $(document).ready(async () => {
 $("#chatNameButton").click(async event => {
   const val = $("#chatNameTextbox").val().trim();
   try {
-    const url = `http://localhost:3000/api/chats/${chatId}`;
+    const url = `/api/chats/${chatId}`;
     const method = 'PATCH';
 
-    axios({ method, url, data: { chatName: val } });
+    axios({
+      method,
+      url,
+      data: {
+        chatName: val
+      }
+    });
     window.location.reload();
   } catch (err) {
     if (err.response) alert(err.response.data.message);
@@ -55,7 +67,7 @@ $("#chatNameButton").click(async event => {
 $(".inputTextbox").keydown(event => {
   if (event.which == 13) {
     const content = $(".inputTextbox").val().trim();
-    if (content) 
+    if (content)
       sendMessage(content);
     return;
   }
@@ -63,24 +75,31 @@ $(".inputTextbox").keydown(event => {
 
   lastType = Date.now();
   setTimeout(() => {
-    if (Date.now() >= lastType + 1500) 
+    if (Date.now() >= lastType + 1500)
       socket.emit('stop typing', chatId);
   }, 1500);
 });
 
 $(".sendMessageButton").click(event => {
   const content = $(".inputTextbox").val().trim();
-  if (content) 
+  if (content)
     sendMessage(content);
 })
 
 const sendMessage = async content => {
   try {
-    const url = 'http://localhost:3000/api/messages';
+    const url = '/api/messages';
     const method = 'POST';
-    const data = { content, chat: chatId };
+    const data = {
+      content,
+      chat: chatId
+    };
 
-    const response = await axios({ url, method, data });
+    const response = await axios({
+      url,
+      method,
+      data
+    });
     socket.emit('stop typing');
     $(".inputTextbox").val("");
 
@@ -93,5 +112,3 @@ const sendMessage = async content => {
     else alert('Something went Wrong');
   }
 }
-
-

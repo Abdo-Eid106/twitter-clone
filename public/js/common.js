@@ -8,21 +8,25 @@ const emitNotification = (room) => {
 }
 //adding post
 const addPost = async (data) => {
-	const url = 'http://localhost:3000/api/posts';
-	const method = 'POST';
+  const url = '/api/posts';
+  const method = 'POST';
 
-	try {
-		const response = await axios({ method, url, data });
+  try {
+    const response = await axios({
+      method,
+      url,
+      data
+    });
     const post = response.data.data.post;
     if (post.replyTo) {
       const userTo = post.replyTo.postedBy._id;
       emitNotification(userTo);
     }
     window.location.reload();
-	} catch (err) {
-		if (err.response) return alert(err.response.data.message);
-		alert('something went wrong');
-	}
+  } catch (err) {
+    if (err.response) return alert(err.response.data.message);
+    alert('something went wrong');
+  }
 }
 //enable or disable the post button
 $("#postTextarea, #replyTextarea").keyup(event => {
@@ -35,8 +39,8 @@ $("#postTextarea, #replyTextarea").keyup(event => {
   if (submitButton.length == 0) return alert("No submit button found");
 
   if (value == "") {
-      submitButton.prop("disabled", true);
-      return;
+    submitButton.prop("disabled", true);
+    return;
   }
   submitButton.prop("disabled", false);
 })
@@ -47,9 +51,12 @@ $(document).on('click', '.likeButton', async (event) => {
   const postId = post.data().id;
 
   try {
-    const url = `http://localhost:3000/api/posts/${postId}/like`;
+    const url = `/api/posts/${postId}/like`;
     const method = 'PUT';
-    const response = await axios({ url, method });
+    const response = await axios({
+      url,
+      method
+    });
 
     const post = response.data.data.post;
     const like = response.data.data.like;
@@ -59,8 +66,7 @@ $(document).on('click', '.likeButton', async (event) => {
       if (userLoggedIn._id.toString() != userTo.toString()) {
         emitNotification(userTo);
       }
-    } 
-    else button.removeClass('active');
+    } else button.removeClass('active');
 
     const likes = post.likes.length;
     button.find('span').text(" " + (likes || ""));
@@ -77,9 +83,12 @@ $(document).on('click', '.retweetButton', async (event) => {
   const postId = post.data().id;
 
   try {
-    const url = `http://localhost:3000/api/posts/${postId}/retweet`;
+    const url = `/api/posts/${postId}/retweet`;
     const method = 'POST';
-    const response = await axios({ url, method });
+    const response = await axios({
+      url,
+      method
+    });
 
     const post = response.data.data.post;
     const retweet = response.data.data.retweet;
@@ -90,8 +99,7 @@ $(document).on('click', '.retweetButton', async (event) => {
       if (userLoggedIn._id.toString() != userTo.toString()) {
         emitNotification(userTo);
       }
-    }
-    else button.removeClass('active');
+    } else button.removeClass('active');
     window.location.reload();
 
     // const retweetUsers = post.retweetUsers.length;
@@ -107,9 +115,12 @@ $("#replyModal").on("show.bs.modal", async (event) => {
   const postId = button.closest('.post').data().id;
 
   try {
-    const url = `http://localhost:3000/api/posts/${postId}`;
+    const url = `/api/posts/${postId}`;
     const method = 'GET';
-    const response = await axios({ url, method });
+    const response = await axios({
+      url,
+      method
+    });
 
     const post = response.data.data.post;
     $("#submitReplyButton").data("id", postId);
@@ -131,9 +142,12 @@ $("#deletePostModal").on("show.bs.modal", (event) => {
 $("#deletePostButton").click(async event => {
   const postId = $(event.target).data('id');
   try {
-    const url = `http://localhost:3000/api/posts/${postId}`;
+    const url = `/api/posts/${postId}`;
     const method = 'DELETE';
-    const response = await axios({ url, method });
+    const response = await axios({
+      url,
+      method
+    });
     window.location.reload();
   } catch (err) {
     if (err.response) return alert(err.response.data.message);
@@ -145,7 +159,9 @@ $("#submitPostButton, #submitReplyButton").click((event) => {
   const button = $(event.target);
   const isModal = button.parents(".modal").length == 1;
   const textbox = isModal ? $("#replyTextarea") : $("#postTextarea");
-  const data = { content: textbox.val() }
+  const data = {
+    content: textbox.val()
+  }
 
   if (isModal) {
     const id = button.data().id;
@@ -171,10 +187,13 @@ $(document).on('click', '.followButton', async (event) => {
   const userId = button.data().user;
 
   try {
-    const url = `http://localhost:3000/api/users/${userId}/follow`;
+    const url = `/api/users/${userId}/follow`;
     const method = 'PUT';
 
-    const response = await axios({ url, method });
+    const response = await axios({
+      url,
+      method
+    });
     const follow = response.data.data.follow;
     const user = response.data.data.user;
 
@@ -195,8 +214,8 @@ $(document).on('click', '.followButton', async (event) => {
   }
 })
 
-$("#filePhoto, #coverPhoto").change(function() {
-  if (!this.files ||!this.files[0]) return;
+$("#filePhoto, #coverPhoto").change(function () {
+  if (!this.files || !this.files[0]) return;
 
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -212,21 +231,26 @@ $("#imageUploadButton, #coverPhotoButton").click(async event => {
   const field = $(id == 'imageUploadButton' ? "#filePhoto" : '#coverPhoto');
   const files = field.prop('files');
 
-  if (files.length == 0) 
+  if (files.length == 0)
     return alert('you must choose a file');
 
   try {
     const form = new FormData();
     form.append(id == 'imageUploadButton' ? 'profilePic' : 'coverPhoto', files[0]);
-    const url = `http://localhost:3000/api/users/${id == 'imageUploadButton' ? 'profilePicture' : 'coverPhoto'}`;
+    const url = `/api/users/${id == 'imageUploadButton' ? 'profilePicture' : 'coverPhoto'}`;
     const method = 'POST';
 
-    const response = await axios({ url, method, data: form, headers: {
-      'Content-Type': 'multipart/form-data'
-    }});
-    
+    const response = await axios({
+      url,
+      method,
+      data: form,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
     window.location.reload();
-  } catch(err) {
+  } catch (err) {
     if (err.response) alert(err.response.data.message);
     else alert('Some thing went wrong')
   }
@@ -238,19 +262,22 @@ $("#confirmPinModal, #unpinModal").on("show.bs.modal", (event) => {
   const target = $(event.relatedTarget);
   const post = target.closest('.post');
   const postId = post.data().id;
-  $(Pin ? "#pinPostButton": "#unpinPostButton").data('id', postId);
+  $(Pin ? "#pinPostButton" : "#unpinPostButton").data('id', postId);
 })
 
 $("#pinPostButton, #unpinPostButton").click(async event => {
   const button = $(event.target);
   const postId = button.data().id;
-  const Pin = (event.target.id == "pinPostButton") ? "pin": "unpin";
+  const Pin = (event.target.id == "pinPostButton") ? "pin" : "unpin";
 
   try {
-    const url = `http://localhost:3000/api/posts/${postId}/${Pin}`;
+    const url = `/api/posts/${postId}/${Pin}`;
     const method = 'PATCH';
-    await axios({ url, method });
-    
+    await axios({
+      url,
+      method
+    });
+
     window.location.reload();
   } catch (err) {
     alert('Something went wrong');
@@ -265,32 +292,34 @@ const popUpChat = (chat) => {
   const html = createChatHtml(chat);
   const element = $(html);
 
-    element.hide().prependTo($('#notificationList')).slideDown(500);
-    refreshNotificationBadge();
+  element.hide().prependTo($('#notificationList')).slideDown(500);
+  refreshNotificationBadge();
 
-    setTimeout(() => {
-      element.fadeOut(500);
-    }, 4000);
+  setTimeout(() => {
+    element.fadeOut(500);
+  }, 4000);
 }
 
 const messageReceived = (message) => {
   if ($(".chatContainer").length == 0) {
     // Show popup notification
     popUpChat(message.chat);
-  }
-  else addMessage(message);
+  } else addMessage(message);
 }
 
 const markAsOpened = async (notificationId, callback) => {
   if (!callback) {
     callback = () => window.location.reload();
   }
-  const url = (notificationId) ? `http://localhost:3000/api/notifications/${notificationId}/markAsOpened`:
-  `http://localhost:3000/api/notifications/markAsOpened`;
+  const url = (notificationId) ? `/api/notifications/${notificationId}/markAsOpened` :
+    `/api/notifications/markAsOpened`;
   const method = 'PATCH';
 
   try {
-    await axios({ url, method });
+    await axios({
+      url,
+      method
+    });
     callback();
   } catch (err) {
     if (err.response) alert(err.response.data.message);
@@ -298,19 +327,25 @@ const markAsOpened = async (notificationId, callback) => {
   }
 }
 
-const refreshMessageBadge = async() => {
+const refreshMessageBadge = async () => {
   try {
-    const url = 'http://localhost:3000/api/chats';
+    const url = '/api/chats';
     const method = 'GET';
-    const params = { unreadOnly: true };
+    const params = {
+      unreadOnly: true
+    };
 
-    const response = await axios({ url, method, params });
+    const response = await axios({
+      url,
+      method,
+      params
+    });
     const length = response.data.data.chats.length;
     const Badge = $("#messagesBadge");
 
-    if (length == 0) 
+    if (length == 0)
       Badge.text("").removeClass('active');
-    else 
+    else
       Badge.text(length).addClass('active');
   } catch (err) {
     if (err.response) alert(err.response.data.message);
@@ -318,19 +353,25 @@ const refreshMessageBadge = async() => {
   }
 }
 
-const refreshNotificationBadge = async() => {
+const refreshNotificationBadge = async () => {
   try {
-    const url = 'http://localhost:3000/api/notifications';
+    const url = '/api/notifications';
     const method = 'GET';
-    const params = { unreadOnly: true };
+    const params = {
+      unreadOnly: true
+    };
 
-    const response = await axios({ url, method, params });
+    const response = await axios({
+      url,
+      method,
+      params
+    });
     const length = response.data.data.notifications.length;
     const Badge = $("#notificationBadge");
 
-    if (length == 0) 
+    if (length == 0)
       Badge.text("").removeClass('active');
-    else 
+    else
       Badge.text(length).addClass('active');
   } catch (err) {
     if (err.response) alert(err.response.data.message);
@@ -340,10 +381,13 @@ const refreshNotificationBadge = async() => {
 
 const popUpNotification = async () => {
   try {
-    const url = 'http://localhost:3000/api/notifications/latest';
+    const url = '/api/notifications/latest';
     const method = 'GET';
 
-    const response = await axios({ url, method }); 
+    const response = await axios({
+      url,
+      method
+    });
     const notification = response.data.data.notification;
 
     const html = createNotificationHtml(notification);

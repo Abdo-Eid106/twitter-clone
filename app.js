@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 dotenv.config({
   path: `${__dirname}/config.env`
 });
@@ -36,6 +37,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(compression());
 
 app.use('/api/posts', postsRoutes);
 app.use('/api/users', usersRoutes);
@@ -53,7 +55,10 @@ const PORT = process.env.PORT;
 mongoose.connect(DB)
   .then(con => {
     console.log('connecting to the database is done');
-  });
+  }).catch(err => {
+    console.log('there is an erorr while conntecting to the database');
+    console.log(err);
+  })
 
 const server = app.listen(PORT, () => console.log('the server is listening on port ' + PORT));
 const io = require('socket.io')(server, {

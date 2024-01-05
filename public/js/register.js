@@ -8,11 +8,15 @@ const passwordConfirm = document.getElementById('passwordConfirm');
 
 const register = async (data) => {
   try {
-    const url = 'http://localhost:3000/api/register';
+    const url = '/api/register';
     const method = 'POST';
 
-    const response = await axios({ url, method, data });
-    window.location = 'http://localhost:3000/';
+    const response = await axios({
+      url,
+      method,
+      data
+    });
+    window.location = '/';
   } catch (err) {
     if (err.response)
       alert(err.response.data.message);
