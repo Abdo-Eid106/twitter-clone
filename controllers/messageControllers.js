@@ -5,6 +5,7 @@ const catchAsync = require(`${__dirname}/../utils/catchAsync.js`);
 
 exports.addMessage = catchAsync(async (req, res, next) => {
   req.body.sender = req.user._id;
+  req.body.readBy = [req.user._id];
   let message = await Message.create(req.body);
   
   const chatId = req.body.chat;
