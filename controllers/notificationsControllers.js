@@ -15,8 +15,6 @@ exports.getNotifications = catchAsync(async (req, res, next) => {
   const notifications = await Notification.find(searchObj)
     .sort('-createdAt');
   
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  res.setHeader('Pragma', 'no-cache');
   res.status(200).json({
     status: 'success',
     data: { 

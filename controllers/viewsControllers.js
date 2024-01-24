@@ -176,8 +176,6 @@ exports.getChats = async (req, res, next) => {
   const payloud = getPayloud(req.user, 'Inbox');
   payloud.chats = chats;
   
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  res.setHeader('Pragma', 'no-cache');
   return res.render('inboxPage', payloud);
 }
 

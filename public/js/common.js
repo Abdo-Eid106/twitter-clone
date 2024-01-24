@@ -343,6 +343,18 @@ const markAsOpened = async (notificationId, callback) => {
   }
 }
 
+$(document).on('click', '.notification', async event => {
+  event.preventDefault();
+
+  const notification = $(event.target);
+  const id = notification.data().id;
+  const href = notification.attr('href');
+
+  const callback = () => window.location.href = href;
+
+  await markAsOpened(id, callback);
+})
+
 const refreshMessageBadge = async () => {
   try {
     const url = '/api/chats';
