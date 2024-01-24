@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const formatTime = require(`${__dirname}/../utils/formatTime.js`);
 
+const Notificiation = require(`${__dirname}/notificationModel.js`);
+
 const postSchema = new mongoose.Schema({
   content: {
     type: String,
@@ -51,8 +53,13 @@ postSchema.pre(/^find/, function(next) {
 
 postSchema.post('findOneAndDelete', async (doc, next) => {
   if (!doc) return next();
+
   const postId = doc._id;
-  await Post.deleteMany({ $or: [{ retweetData: postId }, { replyTo: postId }]});
+  const posts = await Post.find({ $or: [{ retweetData: postId }, { replyTo: postId }]});
+  for (const post of posts)
+      await Post.findOneAndDelete({ _id: post._id });
+
+  await Notificiation.deleteMany({ entityId: postId });
   next();
 })
 
