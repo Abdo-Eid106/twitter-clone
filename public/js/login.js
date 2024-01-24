@@ -20,11 +20,15 @@ const login = async (username, password) => {
   }
 }
 
+let canLogin = true;
 const loginForm = document.getElementById('loginForm');
 loginForm.addEventListener('submit', async event => {
   event.preventDefault();
+  if (!canLogin) return;
+  canLogin = false;
 
   const email = document.getElementById('username').value;
   const password = document.getElementById('password').value;
-  login(email, password);
+  await login(email, password);
+  canLogin = true;
 })

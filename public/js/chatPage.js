@@ -80,10 +80,14 @@ $(".inputTextbox").keydown(event => {
   }, 1500);
 });
 
-$(".sendMessageButton").click(event => {
+let canSend = true;
+$(".sendMessageButton").click(async event => {
+  if (!canSend) return;
+  canSend = false;
   const content = $(".inputTextbox").val().trim();
-  if (content)
-    sendMessage(content);
+  if (content) 
+    await sendMessage(content);
+  canSend = true;
 })
 
 const sendMessage = async content => {

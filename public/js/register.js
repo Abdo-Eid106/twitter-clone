@@ -24,8 +24,11 @@ const register = async (data) => {
   }
 }
 
+let canRegister = true;
 form.addEventListener('submit', async event => {
   event.preventDefault();
+  if (!canRegister) return;
+  canRegister = false;
 
   const data = {};
   data.firstName = firstName.value;
@@ -34,6 +37,6 @@ form.addEventListener('submit', async event => {
   data.email = email.value;
   data.password = password.value;
   data.passwordConfirm = passwordConfirm.value;
-
-  register(data);
+  await register(data);
+  canRegister = true;
 })

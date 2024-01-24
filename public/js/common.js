@@ -165,7 +165,7 @@ $("#deletePostButton").click(async event => {
   }
 })
 
-$("#submitPostButton, #submitReplyButton").click((event) => {
+$("#submitPostButton, #submitReplyButton").click(async (event) => {
   const button = $(event.target);
   const isModal = button.parents(".modal").length == 1;
   const textbox = isModal ? $("#replyTextarea") : $("#postTextarea");
@@ -178,7 +178,16 @@ $("#submitPostButton, #submitReplyButton").click((event) => {
     if (id == null) return alert("Button id is null");
     data.replyTo = id;
   }
-  addPost(data);
+
+  button.prop('disabled', true);
+  try {
+    await addPost(data);
+    button.prop('disabled', false);
+  } catch (err) {
+    button.prop('disabled', false);
+    if (err.reponse) return alert(err.response.data.message);
+    else alert('Something went wrong');
+  }
 })
 
 $(document).on('click', '.post', (event) => {

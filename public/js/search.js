@@ -29,5 +29,5 @@ $("#searchBox").keyup(async event => {
       if (err.response) return alert(err.response.data);
       alert("Something Went Wrong");
     }
-  }, 1000)
+  }, 500)
 })

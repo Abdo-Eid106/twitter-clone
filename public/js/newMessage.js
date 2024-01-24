@@ -46,7 +46,11 @@ $('#userSearchTextbox').keydown(async event => {
   }, 1000);
 });
 
+let canCreate = true;
 createChatButton.click(async event => {
+  if (!canCreate) return;
+  canCreate = false;
+
   try {
     const url = '/api/chats';
     const method = 'POST';
@@ -59,9 +63,10 @@ createChatButton.click(async event => {
       method,
       data
     });
+  
     window.location.href = '/messages';
-
   } catch (err) {
+    canCreate = true;
     if (err.response) alert(err.reponse.data.message);
     else alert('Something went wrong');
   }
