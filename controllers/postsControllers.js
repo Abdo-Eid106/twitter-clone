@@ -189,11 +189,20 @@ exports.getPost = catchAsync(async (req, res, next) => {
 })
 
 exports.deletePost = catchAsync(async (req, res, next) => {
-	const post = await Post.findByIdAndDelete(req.params.id);
+	const post = await Post.findById(req.params.id);
 
 	if (!post) {
     return next(new AppError('there is no Post with this ID', 404));
 	}
+
+  if (req.user._id.toString() != post.postedBy._id.toString()) {
+    return res.status(401).json({
+      status: 'failed',
+      message: "you can't delete this post"
+    })
+  }
+
+  await Post.findByIdAndDelete(req.params.id);
 
   if (post.replyTo && post.replyTo.postedBy._id.toString() != req.user._id.toString()) {
 		const userFrom = req.user._id;

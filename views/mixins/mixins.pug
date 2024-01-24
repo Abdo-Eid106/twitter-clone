@@ -8,12 +8,12 @@ mixin createPostForm(user)
         button#submitPostButton(disabled="") Post
 
 mixin createPost(post, userLoggedIn)
-  - const Buttons = (post.postedBy._id.toString() == userLoggedIn._id.toString());
   - const retweet = (post.retweetData) ? true: false;
   - const reply = (post.replyTo) ? true: false;
   - const replyToUsername = (reply) ? post.replyTo.postedBy.username: '';
   - const retweetedBy = post.postedBy.username;
   - post = (retweet) ? post.retweetData: post;
+  - const Buttons = (post.postedBy._id.toString() == userLoggedIn._id.toString());
   .post(data-id=post._id)
     if retweet
       .postActionContainer 

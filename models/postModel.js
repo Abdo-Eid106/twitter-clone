@@ -49,5 +49,12 @@ postSchema.pre(/^find/, function(next) {
   next();
 })
 
+postSchema.post('findOneAndDelete', async (doc, next) => {
+  if (!doc) return next();
+  const postId = doc._id;
+  await Post.deleteMany({ $or: [{ retweetData: postId }, { replyTo: postId }]});
+  next();
+})
+
 const Post = mongoose.model('Post', postSchema);
-module.exports = Post;
+module.exports = Post; 
