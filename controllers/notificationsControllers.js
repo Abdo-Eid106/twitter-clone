@@ -7,12 +7,16 @@ exports.getNotifications = catchAsync(async (req, res, next) => {
     userTo: req.user._id,
     notificationType: { $ne: 'newMessage' }
   };
+
   if (req.query.unreadOnly == 'true') {
     searchObj.opened = false;
   }
+
   const notifications = await Notification.find(searchObj)
     .sort('-createdAt');
-
+  
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.setHeader('Pragma', 'no-cache');
   res.status(200).json({
     status: 'success',
     data: { 
@@ -21,26 +25,34 @@ exports.getNotifications = catchAsync(async (req, res, next) => {
   });
 })
 
+exports.getUnreadedNotificationCount = catchAsync(async (req, res, next) => {
+  const notifications = await Notification.find({ userTo: req.user._id,
+    notificationType: { $ne: 'newMessage' }, readed: false });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      count: notifications.length
+    }
+  });
+})
+
 exports.markOne = catchAsync(async (req, res, next) => {
   const notification = await Notification.findByIdAndUpdate(req.params.id,
-    { opened: true },
+    { opened: true, readed: true },
     { new: true });
-  
+
   if (!notification) {
     return next(new AppError('there is no notification with thisId', 404));
   }
 
-  if (notification.userTo._id.toString() != req.user._id.toString()) {
-    return next(new AppError('this notification is belongs to another user', 401));
-  }
-  
   return res.status(204).json({
     status: 'success'
   });
 })
 
 exports.markAll = catchAsync(async (req, res, next) => {
-  await Notification.updateMany({ userTo: req.user._id }, { opened: true });
+  await Notification.updateMany({ userTo: req.user._id }, { readed: true });
 
   res.status(204).json({
     status: 'success'

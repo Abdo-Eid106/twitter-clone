@@ -7,6 +7,7 @@ const notificationsControllers = require(`${__dirname}/../../controllers/notific
 router.use(authControllers.protect);
 
 router.get('/latest', notificationsControllers.getLatestNotification);
+router.get('/count', notificationsControllers.getUnreadedNotificationCount);
 router.get('/', notificationsControllers.getNotifications);
 
 router.patch('/markAsOpened', notificationsControllers.markAll);

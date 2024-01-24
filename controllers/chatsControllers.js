@@ -73,9 +73,11 @@ exports.getChat = catchAsync(async (req, res, next) => {
     if (user) {
       chat = await Chat.findOneAndUpdate({
         isGroupChat: false,
-        users: { $size: 2,
-        $elemMatch: { $eq: userId },
-        $elemMatch: { $eq: chatId } }
+        $and: [
+          { users: { $size: 2 } },
+          { users: { $elemMatch: { $eq: userId } } },
+          { users: { $elemMatch: { $eq: chatId } } }
+        ]
       }, {
         $setOnInsert: { users: [userId, chatId] }
       }, {

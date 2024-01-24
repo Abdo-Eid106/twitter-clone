@@ -175,6 +175,9 @@ exports.getChats = async (req, res, next) => {
   
   const payloud = getPayloud(req.user, 'Inbox');
   payloud.chats = chats;
+  
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.setHeader('Pragma', 'no-cache');
   return res.render('inboxPage', payloud);
 }
 
@@ -188,9 +191,11 @@ exports.getChat = async (req, res, next) => {
     if (user) {
       chat = await Chat.findOneAndUpdate({
         isGroupChat: false,
-        users: { $size: 2,
-        $elemMatch: { $eq: userId },
-        $elemMatch: { $eq: chatId } }
+        $and: [
+          { users: { $size: 2 } },
+          { users: { $elemMatch: { $eq: userId } } },
+          { users: { $elemMatch: { $eq: chatId } } }
+        ]
       }, {
         $setOnInsert: { users: [userId, chatId] }
       }, {

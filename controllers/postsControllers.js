@@ -4,15 +4,6 @@ const Notification = require(`${__dirname}/../models/notificationModel.js`);
 const catchAsync = require(`${__dirname}/../utils/catchAsync.js`);
 const AppError = require(`${__dirname}/../utils/AppError.js`);
 
-const addNotification = catchAsync(async (userTo, userFrom, notificationType, entityId, add) => {
-	if (userTo.toString() != userFrom.toString()) {
-		if (add) {
-			await Notification.addNotification(userTo , userFrom, notificationType, entityId);
-		} else {
-			await Notification.deleteNotification(userTo, userFrom, notificationType, entityId);
-		}
-	}
-})
 
 exports.addPost = catchAsync(async (req, res, next) => {
 	const content = req.body.content;
@@ -24,12 +15,12 @@ exports.addPost = catchAsync(async (req, res, next) => {
 	let post = await Post.create(req.body);
 	post = await Post.findById(post._id);
 
-	if (post.replyTo) {
+	if (post.replyTo && post.replyTo.postedBy._id.toString() != req.user._id.toString()) {
 		const userFrom = req.user._id;
 		const userTo = post.replyTo.postedBy._id;
 		const entityId = post._id;
-		addNotification(userTo, userFrom, 'reply', entityId, true);
-	}
+		await Notification.addNotification(userTo, userFrom, 'reply', entityId, true);
+	} 
 
 	res.status(201).json({
 		status: 'status',
@@ -105,7 +96,13 @@ exports.postLike = catchAsync(async (req, res, next) => {
 	const userFrom = req.user._id;
 	const userTo = post.postedBy._id;
 	const entityId = post._id;
-	await addNotification(userTo, userFrom, 'postLike', entityId, !hasLike);
+
+  if (userFrom.toString() != userTo.toString()) {
+    if (!hasLike) 
+      await Notification.addNotification(userTo, userFrom, 'postLike', entityId);
+    else 
+      await Notification.deleteNotification(userTo, userFrom, 'postLike', entityId);
+  }
 
 	res.status(200).json({
 		status: 'success',
@@ -154,7 +151,13 @@ exports.postRetweet = catchAsync(async (req, res, next) => {
 	const userFrom = req.user._id;
 	const userTo = post.postedBy._id;
 	const entityId = post._id;
-	await addNotification(userTo, userFrom, 'retweet', entityId, (op == '$push'));
+  
+  if (userFrom.toString() != userTo.toString()) {
+    if (op == '$push') 
+      await Notification.addNotification(userTo, userFrom, 'retweet', entityId);
+    else 
+      await Notification.deleteNotification(userTo, userFrom, 'retweet', entityId);
+  }
 
 	res.status(200).json({
 		status: 'success',
@@ -186,16 +189,23 @@ exports.getPost = catchAsync(async (req, res, next) => {
 })
 
 exports.deletePost = catchAsync(async (req, res, next) => {
-	const deletedPost = await Post.findByIdAndDelete(req.params.id);
+	const post = await Post.findByIdAndDelete(req.params.id);
 
-	if (!deletedPost) {
+	if (!post) {
     return next(new AppError('there is no Post with this ID', 404));
 	}
+
+  if (post.replyTo && post.replyTo.postedBy._id.toString() != req.user._id.toString()) {
+		const userFrom = req.user._id;
+		const userTo = post.replyTo.postedBy._id;
+		const entityId = post._id;
+		await Notification.deleteNotification(userTo, userFrom, 'reply', entityId, true);
+	} 
 
 	res.status(203).json({
 		status: 'success',
 		data: {
-			deletedPost
+			post
 		}
 	})
 })

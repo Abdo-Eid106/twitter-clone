@@ -16,5 +16,3 @@ block content
       - const users = (path == '/following') ? profileUser.following: profileUser.followers;
       each user in users 
         +createUser(user, userLoggedIn)
-block scripts
-  script(src="/js/followersAndFollowing.js")

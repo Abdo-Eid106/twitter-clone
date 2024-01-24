@@ -1,12 +1,14 @@
 $(document).ready(async () => {
   try {
-    const url = '/api/notifications';
-    const method = 'GET';
+    url = '/api/notifications';
+    method = 'GET';
 
-    const response = await axios({
-      url,
-      method
-    });
+    let response = await axios({ url, method });
+
+    for (let noti of response.data.data.notifications) {
+      console.log(noti);
+    }
+
     outputNotificationList(response.data.data.notifications, $(".resultsContainer"));
   } catch (err) {
     if (err.response) alert(err.response.data.message);
@@ -16,10 +18,14 @@ $(document).ready(async () => {
 
 $(document).on('click', '.notification.active', async event => {
   event.preventDefault();
-  const id = $(event.target).data().id;
-  const href = $(event.target).attr('href');
+
+  const notification = $(event.target);
+  const id = notification.data().id;
+  const href = notification.attr('href');
+
   const callback = () => window.location.href = href;
-  markAsOpened(id, callback);
+
+  await markAsOpened(id, callback);
 })
 
 const outputNotificationList = (notifications, container) => {

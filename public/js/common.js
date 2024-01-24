@@ -6,6 +6,7 @@ let timer;
 const emitNotification = (room) => {
   socket.emit('notification recieved', room);
 }
+
 //adding post
 const addPost = async (data) => {
   const url = '/api/posts';
@@ -44,9 +45,11 @@ $("#postTextarea, #replyTextarea").keyup(event => {
   }
   submitButton.prop("disabled", false);
 })
+
 //like Button
 $(document).on('click', '.likeButton', async (event) => {
   const button = $(event.target);
+  button.prop('disabled', true);
   const post = button.closest('.post');
   const postId = post.data().id;
 
@@ -70,15 +73,19 @@ $(document).on('click', '.likeButton', async (event) => {
 
     const likes = post.likes.length;
     button.find('span').text(" " + (likes || ""));
+    button.prop('disabled', false);
   } catch (err) {
+    button.prop('disabled', false);
     if (err.response) return alert(err.response.data.message);
     return alert('something went wrong');
   }
 })
 
+
 //tweet Button
 $(document).on('click', '.retweetButton', async (event) => {
   const button = $(event.target);
+  button.prop('disabled', true);
   const post = button.closest('.post');
   const postId = post.data().id;
 
@@ -100,11 +107,10 @@ $(document).on('click', '.retweetButton', async (event) => {
         emitNotification(userTo);
       }
     } else button.removeClass('active');
+    button.prop('disabled', false);
     window.location.reload();
-
-    // const retweetUsers = post.retweetUsers.length;
-    // button.find('span').text(" " + (retweetUsers || ""));
   } catch (err) {
+    button.prop('disabled', false);
     if (err.response) return alert(err.response.data.message);
     return alert('something went wrong');
   }
@@ -140,7 +146,9 @@ $("#deletePostModal").on("show.bs.modal", (event) => {
 })
 
 $("#deletePostButton").click(async event => {
-  const postId = $(event.target).data('id');
+  const button = $(event.target)
+  const postId = button.data('id');
+  button.prop('disabled', true);
   try {
     const url = `/api/posts/${postId}`;
     const method = 'DELETE';
@@ -148,8 +156,10 @@ $("#deletePostButton").click(async event => {
       url,
       method
     });
+    button.prop('disabled', false);
     window.location.reload();
   } catch (err) {
+    button.prop('disabled', false);
     if (err.response) return alert(err.response.data.message);
     return alert('something went wrong');
   }
@@ -181,9 +191,11 @@ $(document).on('click', '.post', (event) => {
   }
 })
 
+
 //post follow
 $(document).on('click', '.followButton', async (event) => {
   const button = $(event.target);
+  button.prop('disabled', true);
   const userId = button.data().user;
 
   try {
@@ -208,7 +220,9 @@ $(document).on('click', '.followButton', async (event) => {
 
     const followersLabel = $("#followersValue");
     followersLabel.text(user.followers.length);
+    button.prop('disabled', false);
   } catch (err) {
+    button.prop('disabled', false);
     if (err.reponse) return alert(err.response.data.message);
     else alert('Something went wrong');
   }
@@ -227,6 +241,7 @@ $("#filePhoto, #coverPhoto").change(function () {
 })
 
 $("#imageUploadButton, #coverPhotoButton").click(async event => {
+
   const id = event.target.id;
   const field = $(id == 'imageUploadButton' ? "#filePhoto" : '#coverPhoto');
   const files = field.prop('files');
@@ -293,7 +308,7 @@ const popUpChat = (chat) => {
   const element = $(html);
 
   element.hide().prependTo($('#notificationList')).slideDown(500);
-  refreshNotificationBadge();
+  refreshMessageBadge();
 
   setTimeout(() => {
     element.fadeOut(500);
@@ -311,6 +326,7 @@ const markAsOpened = async (notificationId, callback) => {
   if (!callback) {
     callback = () => window.location.reload();
   }
+  
   const url = (notificationId) ? `/api/notifications/${notificationId}/markAsOpened` :
     `/api/notifications/markAsOpened`;
   const method = 'PATCH';
@@ -355,7 +371,7 @@ const refreshMessageBadge = async () => {
 
 const refreshNotificationBadge = async () => {
   try {
-    const url = '/api/notifications';
+    const url = '/api/notifications/count';
     const method = 'GET';
     const params = {
       unreadOnly: true
@@ -366,7 +382,7 @@ const refreshNotificationBadge = async () => {
       method,
       params
     });
-    const length = response.data.data.notifications.length;
+    const length = response.data.data.count;
     const Badge = $("#notificationBadge");
 
     if (length == 0)
@@ -406,7 +422,14 @@ const popUpNotification = async () => {
   }
 }
 
-$(document).ready(() => {
+const readAll = async () => {
+  let url = '/api/notifications/markAsOpened';
+  let method = 'PATCH';
+  await axios({ url, method });
+}
+
+$(document).ready(async () => {
   refreshMessageBadge();
+  if (window.location.pathname == '/notifications') await readAll();
   refreshNotificationBadge();
 })
