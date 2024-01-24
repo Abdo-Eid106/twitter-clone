@@ -3,7 +3,7 @@ const router = express.Router();
 
 const userControllers = require(`${__dirname}/../../controllers/usersControllers.js`);
 const authControllers = require(`${__dirname}/../../controllers/authControllers.js`);
-const { upload, resizeProfilePhoto, resizeCoverPhoto } = require(`${__dirname}/../../utils/upload.js`);
+const { upload, resizeProfilePhoto, resizeCoverPhoto } = require(`${__dirname}/../../utils/uploadOnCloud.js`);
 
 
 router.use(authControllers.protect);
