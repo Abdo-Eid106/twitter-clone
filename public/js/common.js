@@ -324,11 +324,30 @@ const popUpChat = (chat) => {
   }, 4000);
 }
 
-const messageReceived = (message) => {
-  if ($(".chatContainer").length == 0) {
-    // Show popup notification
-    popUpChat(message.chat);
-  } else addMessage(message);
+const messageReceived = async(message) => {
+  try {
+    if ($(".chatContainer").length && chatId.toString() == message.chat._id.toString()) {
+      const url = `/api/chats/${message.chat._id}/messages/markAsRead`;
+      const method = 'PATCH';
+
+      axios({ url, method });
+      addMessage(message);
+    } else if (window.location.pathname == '/messages') {
+      const url = `/api/chats/${message.chat._id}`;
+      const method = 'GET';
+
+      const response = await axios({ url, method });
+      const chat = response.data.data.chat;
+      
+      $(`[data-id="${chat._id}"]`).remove();
+      $('.resultsContainer').prepend(createChat(chat));
+      refreshMessageBadge();
+    } else
+      popUpChat(message.chat);
+  } catch (err) {
+    if (err.response) alert(err.response.data.message);
+    else alert(err);
+  }
 }
 
 const markAsOpened = async (notificationId, callback) => {

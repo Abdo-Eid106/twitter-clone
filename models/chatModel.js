@@ -22,7 +22,9 @@ const chatSchema = new mongoose.Schema({
 });
 
 chatSchema.pre(/^find/, function (next) {
-  this.populate('users');
+  this
+    .populate('users')
+    .populate('latestMessage')
   next();
 });
 

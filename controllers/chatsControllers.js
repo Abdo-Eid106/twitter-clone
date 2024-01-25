@@ -31,10 +31,7 @@ exports.addChat = catchAsync(async (req, res, next) => {
 exports.getChats = catchAsync(async (req, res, next) => {
   let chats = await Chat.find({
     users: { $elemMatch: { $eq: req.user._id }}
-  })
-    .populate('latestMessage')
-    .sort('-updatedAt');
-  await Chat.populate(chats, 'latestMessage.sender');
+  }).sort('-updatedAt');
 
   if (req.query.unreadOnly == 'true') {
     chats = chats.filter(chat => {

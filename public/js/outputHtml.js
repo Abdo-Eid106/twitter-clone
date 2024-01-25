@@ -408,7 +408,7 @@ const createChat = (chat) => {
       }
   }
 
-  return `<a href="/messages/${chat._id}" class="${active ? 'active' : ''} resultListItem">
+  return `<a href="/messages/${chat._id}" data-id="${chat._id}"class="${active ? 'active' : ''} resultListItem">
       ${createChatImages(chat, 'resultsImageContainer')}
     <div class="resultsDetailsContainer ellipsis">
       <span class="heading ellipsis">${createChatName(chat)}</span>

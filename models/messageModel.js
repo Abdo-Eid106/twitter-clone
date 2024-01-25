@@ -21,5 +21,10 @@ const messageSchema = new mongoose.Schema({
   timestamps: true
 });
 
+messageSchema.pre(/^find/, function (next) {
+  this.populate('sender');
+  next();
+});
+
 const Message = mongoose.model('Message', messageSchema);
 module.exports = Message;
