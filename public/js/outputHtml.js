@@ -327,17 +327,6 @@ function getOtherChatUsers(users) {
     return users.filter(user => user._id != userLoggedIn._id);
 }
 
-// function messageReceived(newMessage) {
-//     if($(`[data-room="${newMessage.chat._id}"]`).length == 0) {
-//         // Show popup notification
-//         showMessagePopup(newMessage);
-//     }
-//     else {
-//         addChatMessageHtml(newMessage);
-//     }
-
-//     refreshMessagesBadge()
-// }
 function showMessagePopup(data) {
 
     if(!data.chat.latestMessage._id) {
@@ -351,50 +340,79 @@ function showMessagePopup(data) {
     setTimeout(() => element.fadeOut(400), 5000);
 }
 
+const createChatName = (chat) => {
+  const chatName = chat.chatName;
+  if (chatName) return chatName;
 
+  let users = chat.users.filter(user => user._id.toString() != userLoggedIn._id.toString());
+  const length = users.length;
+  const remain = length - 3;
+  if (length > 3) users = users.splice(0, 3);
 
-function createChatHtml(chatData) {
-    var chatName = getChatName(chatData);
-    var image = getChatImageElements(chatData);
-    var latestMessage = getLatestMessage(chatData.latestMessage);
-
-    var activeClass = !chatData.latestMessage || chatData.latestMessage.readBy.includes(userLoggedIn._id) ? "" : "active";
-    
-    return `<a href='/messages/${chatData._id}' class='resultListItem ${activeClass}'>
-                ${image}
-                <div class='resultsDetailsContainer ellipsis'>
-                    <span class='heading ellipsis'>${chatName}</span>
-                    <span class='subText ellipsis'>${latestMessage}</span>
-                </div>
-            </a>`;
+  const userNames = users.map(user => user.firstName + ' ' + user.lastName);
+  let name = userNames.join(', ');
+  if (remain > 0) name += ` ...`;
+  return name;
 }
 
-function getLatestMessage(latestMessage) {
-    if (latestMessage != null) {
-        var sender = latestMessage.sender;
-        return `${sender.firstName} ${sender.lastName}: ${latestMessage.content}`;
-    }
+const createChatImages = (chat, type) => {
+  const count = chat.users.length;
+  const maxShow = 3;
+  let remain = count - 1 - maxShow;
+  const images = [];
 
-    return "New chat";
+  for (const user of chat.users) {
+    if (user._id.toString() == userLoggedIn._id.toString()) continue;
+
+    images.push(user.profilePic);
+    if (images.length == maxShow) break;
+  }
+
+  let pictures = "";
+  for (const image of images) {
+    pictures += `<img src="${image}" alt="User's profile pic">\n`
+  }
+
+  if (remain > 0) {
+    remain = `<div class="userCount">
+                <span>+${remain}</span>
+              </div>`;
+  } else remain = '';
+  return `<div class="${images.length > 1 && type != 'chatImagesContainer' ? 'groupChatImage' : ''} ${type}">
+            ${remain}
+            ${pictures}
+          </div>`;
 }
 
-function getChatImageElements(chatData) {
-    var otherChatUsers = getOtherChatUsers(chatData.users);
-
-    var groupChatClass = "";
-    var chatImage = getUserChatImageElement(otherChatUsers[0]);
-
-    if(otherChatUsers.length > 1) {
-        groupChatClass = "groupChatImage";
-        chatImage += getUserChatImageElement(otherChatUsers[1]);
-    }
-
-    return `<div class='resultsImageContainer ${groupChatClass}'>${chatImage}</div>`;
+const createLastestMessage = (chat) => {
+  let latestMessage = chat.latestMessage;
+  if (latestMessage) {
+    const firstName = latestMessage.sender.firstName;
+    const lastName = latestMessage.sender.lastName;
+    latestMessage = `${firstName} ${lastName}: ${latestMessage.content}`;
+  } else 
+    latestMessage = 'New Chat';
+  return latestMessage;
 }
 
-function getUserChatImageElement(user) {
-    if (!user || !user.profilePic) {
-        return alert("User passed into function is invalid");
-    }
-    return `<img src='${user.profilePic}' alt='User's profile pic'>`;
+const createChat = (chat) => {
+  let active = false;
+
+  const latestMessage = chat.latestMessage;
+  if (latestMessage) {
+    active = true;
+    for (let user of latestMessage.readBy) 
+      if (user.toString() == userLoggedIn._id.toString()) {
+        active = false;
+        break;
+      }
+  }
+
+  return `<a href="/messages/${chat._id}" class="${active ? 'active' : ''} resultListItem">
+      ${createChatImages(chat, 'resultsImageContainer')}
+    <div class="resultsDetailsContainer ellipsis">
+      <span class="heading ellipsis">${createChatName(chat)}</span>
+      <span class="subText ellipsis">${createLastestMessage(chat)}</span>
+    </div>
+  </a>`
 }

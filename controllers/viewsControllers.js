@@ -162,21 +162,6 @@ exports.getChats = async (req, res, next) => {
     });
   }
 
-  for (let chat of chats) {
-    const latestMessage = chat.latestMessage;
-    if (!latestMessage) {
-      chat.active = false;
-      continue;
-    }
-    const readBy = latestMessage.readBy;
-    for (let user of readBy) {
-      if (user.toString() == req.user._id.toString()) {
-        chat.active = false;
-        break;
-      }
-    }
-  }
-  
   const payloud = getPayloud(req.user, 'Inbox');
   payloud.chats = chats;
   

@@ -313,7 +313,7 @@ $("#markNotificationsAsRead").click(async event => {
 });
 
 const popUpChat = (chat) => {
-  const html = createChatHtml(chat);
+  const html = createChat(chat);
   const element = $(html);
 
   element.hide().prependTo($('#notificationList')).slideDown(500);

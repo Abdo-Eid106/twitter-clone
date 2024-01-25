@@ -186,54 +186,6 @@ mixin createUser(user, userLoggedIn)
         - const buttonClass = (isFollow)? "followButton following" : "followButton";
         button(data-user=`${user._id}`, class=`${buttonClass}`)= `${text}`
 
-mixin createChatName(chat, userLoggedIn)
-  - let chatName = chat.chatName;
-  - let users = chat.users;
-  - users = (users.length == 1) ? users : users.filter(user => user._id.toString() != userLoggedIn._id.toString());
-  - const userNames = users.map(user => user.firstName + ' ' + user.lastName);
-  - if (!chatName) chatName = userNames.join(', ');
-  div= chatName
-
-mixin createChat(chat, userLoggedIn)
-  - let chatName = chat.chatName;
-  - let users = chat.users;
-  - users = (users.length == 1) ? users : users.filter(user => user._id.toString() != userLoggedIn._id.toString());
-  - const userNames = users.map(user => user.firstName + ' ' + user.lastName);
-  - if (!chatName) chatName = userNames.join(', ');
-  - const images = [];
-  - for (let i = 0; i < Math.min(2, users.length); i++) { images.push(users[i].profilePic) };
-  - let latestMessage = (chat.latestMessage) ? chat.latestMessage : '';
-  - const firstName = (latestMessage) ? latestMessage.sender.firstName : ' ';
-  - const lastName = (latestMessage) ? latestMessage.sender.lastName: ' ';
-  - latestMessage = (latestMessage) ? `${firstName} ${lastName}: ${latestMessage.content}`: 'New Chat';
-
-  a.resultListItem(href=`/messages/${chat._id}` class = `${chat.active ? 'active' : ''}`)
-    .resultsImageContainer(class=`${users.length > 1 ? 'groupChatImage': ''}`)
-      each image in images 
-        img(src=`${image}`, alt="User's profile pic")
-    .resultsDetailsContainer.ellipsis
-      span.heading.ellipsis #{chatName}
-      span.subText.ellipsis #{latestMessage}
-
-mixin createChatImage(chat, userLoggedIn)
-  if(!chat)
-    return 
-  - const count = chat.users.length 
-  - const maxShow = 3
-  - let i = 0
-
-  .chatImagesContainer
-    if count - maxShow - 1 > 0
-      .userCount
-        span +#{remainingUsers}
-    each user in chat.users 
-      if user._id.toString() == userLoggedIn._id.toString()
-        -continue 
-      img(src=user.profilePic, alt="User's profile picture", title=user.firstName)
-      - i++
-      if i == maxShow 
-        -break
-
 mixin createChatNameModal(chat)
   #chatNameModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='chatNameModalLabel', aria-hidden='true')
     .modal-dialog(role='document')

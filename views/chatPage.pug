@@ -9,9 +9,7 @@ block content
 
     .chatPageContainer
       .chatTitleBarContainer
-        +createChatImage(chat, userLoggedIn)
         span#chatName(data-toggle="modal", data-target="#chatNameModal")
-          +createChatName(chat, userLoggedIn)
       .mainContentContainer
         .loadingSpinnerContainer
           img(src="/images/loadingSpinner.gif", alt="Loading spinner")

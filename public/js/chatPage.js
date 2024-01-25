@@ -1,18 +1,24 @@
 let lastType;
 $(document).ready(async () => {
+
   socket.emit('join room', chatId);
   socket.on('typing', () => $(".typingDots").show());
   socket.on('stop typing', () => $(".typingDots").hide());
 
   try {
-    let url = `/api/chats/${chatId}/messages`;
+    let url = `/api/chats/${chatId}`;
     let method = 'GET';
+    let response = await axios({ url, method });
 
-    const response = await axios({
-      url,
-      method
-    });
-    const data = response.data.data.messages;
+    let chat = response.data.data.chat;
+    $('.chatTitleBarContainer').prepend(createChatImages(chat, 'chatImagesContainer'));
+    $('#chatName').append(createChatName(chat));
+
+    url = `/api/chats/${chatId}/messages`;
+    method = 'GET';
+
+    response = await axios({ url, method });
+    let data = response.data.data.messages;
 
     const messages = [];
     let lastSenderId = "";
