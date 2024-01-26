@@ -80,6 +80,7 @@ exports.isLoggedIn = async (req, res, next) => {
   try {
     const payloud = await jwt.verify(token, JWTSecret);
     const user = await User.findById(payloud.id);
+    if (!user) return res.redirect('/login');
     req.user = user;
 
     return next();
@@ -103,6 +104,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   const payloud = await jwt.verify(token, JWTSecret);
   const user = await User.findById(payloud.id);
+  if (!user) return res.redirect('/login');
 
   req.user = user;
   next();
